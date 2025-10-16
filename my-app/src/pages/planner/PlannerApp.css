@@ -26,6 +26,21 @@
   max-width: 1280px;
   margin: 0 auto;
   padding: 0 1.5rem;
+
+}
+
+@media (prefers-color-scheme: dark){
+  .navbar-container{
+      background: #111827;
+        width: 100%;
+  }
+  .vendor-navbar{
+    background: #111827;
+  }
+
+  .navbar-left{
+    background: #111827;
+  }
 }
 
 .navbar-content {
