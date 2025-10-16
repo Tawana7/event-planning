@@ -1,11 +1,10 @@
 /* Event View & Edit Page Styles - Modern Form Design */
 
 .event-view-edit {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 24px;
+    width: 100%;
+    padding: 1rem;
     background: #f8fafc;
-    min-height: 100vh;
+    overflow-y: auto;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 

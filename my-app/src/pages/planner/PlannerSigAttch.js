@@ -1,11 +1,11 @@
 // PDFSignatureAttachment.js
-// Utility to create a signature details page that gets attached to the contract PDF
+// Updated to display both vendor (planner) and client signatures on certificate
 
 /**
- * Generates an HTML document with signature details that can be converted to PDF
- * and attached to the original contract
+ * Generates an HTML document with signature details for both vendor and client
+ * that can be converted to PDF and attached to the original contract
  */
-export const generateSignatureDetailsHTML = (contract, signatureData, signerInfo) => {
+export const generateSignatureDetailsHTML = (contract, signatureData, signerInfo, vendorSignature) => {
   const signedDate = new Date().toLocaleString('en-US', {
     weekday: 'long',
     year: 'numeric',
@@ -29,200 +29,337 @@ export const generateSignatureDetailsHTML = (contract, signatureData, signerInfo
     let displayValue = '';
 
     if (fieldType === 'signature' || fieldType === 'initial') {
-      displayValue = `<img src="${data}" style="max-width: 300px; max-height: 80px; border: 1px solid #ddd; padding: 5px; background: white;" alt="${field.label}" />`;
+      displayValue = `<img src="${data}" style="max-width: 300px; max-height: 80px; border: 1px solid #e5e7eb; padding: 8px; background: white; border-radius: 4px;" alt="${field.label}" />`;
     } else if (fieldType === 'date') {
-      displayValue = `<span style="font-weight: 600; color: #059669;">${data}</span>`;
+      displayValue = `<span style="font-weight: 600; color: #1d4ed8;">${data}</span>`;
     } else if (fieldType === 'text') {
-      displayValue = `<span style="font-weight: 600; color: #1e293b;">${data}</span>`;
+      displayValue = `<span style="font-weight: 600; color: #1f2937;">${data}</span>`;
     } else if (fieldType === 'checkbox') {
-      displayValue = `<span style="font-weight: 600; color: ${data ? '#059669' : '#dc2626'};">${data ? '✓ Checked' : '✗ Not Checked'}</span>`;
+      displayValue = `<span style="font-weight: 600; color: ${data ? '#1d4ed8' : '#9ca3af'};">${data ? '✓ Checked' : '○ Not Checked'}</span>`;
     }
 
     signaturesHTML += `
-      <div style="margin-bottom: 20px; padding: 15px; background: #f8fafc; border-left: 4px solid #2563eb; border-radius: 6px;">
-        <div style="font-weight: 600; color: #475569; margin-bottom: 8px; text-transform: uppercase; font-size: 12px;">
+      <article style="margin-bottom: 20px; padding: 16px; background: white; border: 1px solid #e5e7eb; border-left: 4px solid #1d4ed8; border-radius: 6px;">
+        <header style="font-weight: 600; color: #1f2937; margin-bottom: 8px; text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;">
           ${field.label} ${field.required ? '<span style="color: #dc2626;">*</span>' : ''}
-        </div>
-        <div style="margin-top: 10px;">
+        </header>
+        <section style="margin-top: 10px;">
           ${displayValue}
-        </div>
-        <div style="font-size: 11px; color: #64748b; margin-top: 8px;">
+        </section>
+        <footer style="font-size: 11px; color: #9ca3af; margin-top: 8px;">
           Field Type: ${fieldType} | Required: ${field.required ? 'Yes' : 'No'}
-        </div>
-      </div>
+        </footer>
+      </article>
     `;
   });
 
+  // Vendor signature section
+  let vendorSignatureHTML = '';
+  if (vendorSignature && vendorSignature.signatureData) {
+    vendorSignatureHTML = `
+      <section style="margin-bottom: 30px;">
+        <header style="font-size: 16px; font-weight: 700; color: #1f2937; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 2px solid #e5e7eb; letter-spacing: -0.3px;">
+          Planner Signature
+        </header>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <article style="padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; border-left: 3px solid #7c3aed;">
+            <header style="font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.5px;">
+              Signature
+            </header>
+            <section style="margin-top: 10px;">
+              <img src="${vendorSignature.signatureData}" style="max-width: 100%; height: auto; border: 1px solid #e5e7eb; padding: 8px; background: white; border-radius: 4px;" alt="Planner Signature" />
+            </section>
+          </article>
+          <article style="padding: 16px; background: white; border-radius: 8px; border: 1px solid #e5e7eb; border-left: 3px solid #7c3aed;">
+            <header style="font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
+              Signature Details
+            </header>
+            <section style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 2px;">Name</span>
+                <span style="font-weight: 600; color: #1f2937; font-size: 14px;">${vendorSignature.vendorName || 'Planner'}</span>
+              </div>
+              <div>
+                <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 2px;">Email</span>
+                <span style="font-weight: 600; color: #1f2937; font-size: 14px;">${vendorSignature.vendorEmail || 'Not specified'}</span>
+              </div>
+              <div>
+                <span style="font-size: 10px; color: #6b7280; text-transform: uppercase; display: block; margin-bottom: 2px;">Signed</span>
+                <span style="font-weight: 600; color: #1d4ed8; font-size: 14px;">${new Date(vendorSignature.signedAt).toLocaleString()}</span>
+              </div>
+            </section>
+          </article>
+        </div>
+      </section>
+    `;
+  }
+
   return `
     <!DOCTYPE html>
-    <html>
+    <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Contract Signature Details</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Electronic Signature Certificate</title>
       <style>
         @page {
           margin: 0.75in;
+          size: A4;
         }
+        
         * {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
         }
-        body {
-          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-          line-height: 1.6;
-          color: #1e293b;
-          background: white;
-          padding: 40px;
+
+        html, body {
+          width: 100%;
+          height: 100%;
         }
-        .header {
+
+        body {
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+          line-height: 1.6;
+          color: #1f2937;
+          background: white;
+          padding: 40px 30px;
+        }
+
+        @media (max-width: 768px) {
+          body {
+            padding: 25px 20px;
+          }
+        }
+
+        header.main-header {
           text-align: center;
           padding-bottom: 30px;
-          border-bottom: 3px solid #2563eb;
+          border-bottom: 2px solid #1d4ed8;
           margin-bottom: 40px;
         }
-        .header h1 {
+
+        header.main-header h1 {
           font-size: 28px;
-          color: #1e293b;
-          margin-bottom: 10px;
+          color: #1f2937;
+          margin-bottom: 8px;
           font-weight: 700;
+          letter-spacing: -0.5px;
         }
-        .header p {
+
+        header.main-header p {
           font-size: 14px;
-          color: #64748b;
+          color: #6b7280;
+          margin-bottom: 16px;
         }
-        .section {
-          margin-bottom: 35px;
-        }
-        .section-title {
-          font-size: 18px;
-          font-weight: 700;
-          color: #1e293b;
-          margin-bottom: 15px;
-          padding-bottom: 8px;
-          border-bottom: 2px solid #e2e8f0;
-        }
-        .info-grid {
-          display: grid;
-          grid-template-columns: repeat(2, 1fr);
-          gap: 15px;
-          margin-bottom: 20px;
-        }
-        .info-item {
-          padding: 12px;
-          background: #f8fafc;
-          border-radius: 6px;
-          border-left: 3px solid #2563eb;
-        }
-        .info-label {
-          font-size: 12px;
-          font-weight: 600;
-          color: #64748b;
-          text-transform: uppercase;
-          margin-bottom: 4px;
-        }
-        .info-value {
-          font-size: 14px;
-          font-weight: 600;
-          color: #1e293b;
-        }
-        .certificate {
-          background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
-          border: 2px solid #0284c7;
-          border-radius: 8px;
-          padding: 25px;
-          margin-top: 30px;
-        }
-        .certificate h3 {
-          color: #075985;
-          font-size: 16px;
-          margin-bottom: 12px;
-          text-align: center;
-        }
-        .certificate p {
-          font-size: 13px;
-          color: #0369a1;
-          line-height: 1.8;
-          text-align: center;
-        }
-        .footer {
-          margin-top: 50px;
-          padding-top: 20px;
-          border-top: 2px solid #e2e8f0;
-          text-align: center;
-          font-size: 11px;
-          color: #94a3b8;
-        }
+
         .signature-badge {
           display: inline-block;
-          padding: 6px 12px;
-          background: #d1fae5;
-          color: #065f46;
-          border-radius: 12px;
+          padding: 8px 16px;
+          background: linear-gradient(135deg, #1d4ed8, #7c3aed);
+          color: white;
+          border-radius: 20px;
           font-size: 12px;
           font-weight: 600;
-          margin-top: 10px;
+          letter-spacing: 0.5px;
+        }
+
+        section.content-section {
+          margin-bottom: 35px;
+        }
+
+        section.content-section > header {
+          font-size: 18px;
+          font-weight: 700;
+          color: #1f2937;
+          margin-bottom: 16px;
+          padding-bottom: 10px;
+          border-bottom: 2px solid #e5e7eb;
+          letter-spacing: -0.3px;
+        }
+
+        .info-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          gap: 16px;
+          margin-bottom: 20px;
+        }
+
+        article.info-item {
+          padding: 16px;
+          background: white;
+          border-radius: 8px;
+          border: 1px solid #e5e7eb;
+          border-left: 3px solid #1d4ed8;
+          transition: all 0.2s ease;
+        }
+
+        article.info-item:hover {
+          box-shadow: 0 4px 12px rgba(29, 78, 216, 0.08);
+          border-left: 3px solid #7c3aed;
+        }
+
+        article.info-item header {
+          font-size: 11px;
+          font-weight: 600;
+          color: #6b7280;
+          text-transform: uppercase;
+          margin-bottom: 6px;
+          letter-spacing: 0.5px;
+        }
+
+        article.info-item section {
+          font-size: 14px;
+          font-weight: 600;
+          color: #1f2937;
+          word-break: break-word;
+        }
+
+        section.certification {
+          background: white;
+          border: 2px solid #1d4ed8;
+          border-radius: 10px;
+          padding: 28px;
+          margin-top: 30px;
+        }
+
+        section.certification > header {
+          color: #1d4ed8;
+          font-size: 16px;
+          margin-bottom: 14px;
+          text-align: center;
+          font-weight: 700;
+          letter-spacing: -0.3px;
+        }
+
+        section.certification p {
+          font-size: 13px;
+          color: #4b5563;
+          line-height: 1.9;
+          text-align: center;
+        }
+
+        footer.main-footer {
+          margin-top: 50px;
+          padding-top: 20px;
+          border-top: 2px solid #e5e7eb;
+          text-align: center;
+          font-size: 11px;
+          color: #9ca3af;
+        }
+
+        footer.main-footer p {
+          margin-bottom: 6px;
+        }
+
+        @media print {
+          body {
+            background: white;
+            padding: 0;
+          }
+
+          article.info-item:hover {
+            box-shadow: none;
+            border-left: 3px solid #1d4ed8;
+          }
+
+          @page {
+            margin: 0.75in;
+          }
+        }
+
+        @media (max-width: 480px) {
+          header.main-header h1 {
+            font-size: 24px;
+          }
+
+          section.content-section > header {
+            font-size: 16px;
+          }
+
+          .info-grid {
+            grid-template-columns: 1fr;
+            gap: 12px;
+          }
+
+          section.certification {
+            padding: 20px;
+          }
+
+          body {
+            padding: 20px 15px;
+          }
         }
       </style>
     </head>
     <body>
-      <div class="header">
-        <h1>✅ Electronic Signature Certificate</h1>
+      <header class="main-header">
+        <h1>Electronic Signature Certificate</h1>
         <p>Official Signature Verification Document</p>
-        <div class="signature-badge">LEGALLY BINDING ELECTRONIC SIGNATURE</div>
-      </div>
+        <span class="signature-badge">LEGALLY BINDING ELECTRONIC SIGNATURE</span>
+      </header>
 
-      <div class="section">
-        <div class="section-title">📄 Contract Information</div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-label">Contract Name</div>
-            <div class="info-value">${contract.fileName}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Event</div>
-            <div class="info-value">${contract.eventName}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Client Name</div>
-            <div class="info-value">${contract.clientName}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Client Email</div>
-            <div class="info-value">${contract.clientEmail}</div>
-          </div>
-        </div>
-      </div>
+      <section class="content-section">
+        <header>Contract Information</header>
+        <article class="info-grid">
+          <article class="info-item">
+            <header>Contract Name</header>
+            <section>${contract?.fileName || 'Not specified'}</section>
+          </article>
+          <article class="info-item">
+            <header>Event</header>
+            <section>${contract?.eventName || 'Not specified'}</section>
+          </article>
+          <article class="info-item">
+            <header>Client Name</header>
+            <section>${
+              contract?.clientName && contract.clientName !== 'undefined' && contract.clientName?.trim() 
+                ? contract.clientName 
+                : (contract?.client?.name || 'Not specified')
+            }</section>
+          </article>
+          <article class="info-item">
+            <header>Client Email</header>
+            <section>${
+              contract?.clientEmail && contract.clientEmail !== 'undefined' && contract.clientEmail?.trim() 
+                ? contract.clientEmail 
+                : (contract?.client?.email || 'Not specified')
+            }</section>
+          </article>
+        </article>
+      </section>
 
-      <div class="section">
-        <div class="section-title">🕐 Signing Details</div>
-        <div class="info-grid">
-          <div class="info-item">
-            <div class="info-label">Signed Date & Time</div>
-            <div class="info-value">${signedDate}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Signer IP Address</div>
-            <div class="info-value">${signerInfo.ipAddress || 'Not captured'}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Device Information</div>
-            <div class="info-value">${signerInfo.userAgent ? navigator.platform : 'Not captured'}</div>
-          </div>
-          <div class="info-item">
-            <div class="info-label">Signature Method</div>
-            <div class="info-value">Electronic Signature</div>
-          </div>
-        </div>
-      </div>
+      <section class="content-section">
+        <header>Signing Details</header>
+        <article class="info-grid">
+          <article class="info-item">
+            <header>Signed Date & Time</header>
+            <section>${signedDate}</section>
+          </article>
+          <article class="info-item">
+            <header>Signer IP Address</header>
+            <section>${signerInfo?.ipAddress || 'Not captured'}</section>
+          </article>
+          <article class="info-item">
+            <header>Device Information</header>
+            <section>${signerInfo?.userAgent ? 'Captured' : 'Not captured'}</section>
+          </article>
+          <article class="info-item">
+            <header>Signature Method</header>
+            <section>Electronic Signature</section>
+          </article>
+        </article>
+      </section>
 
-      <div class="section">
-        <div class="section-title">✍️ Completed Signature Fields</div>
+      ${vendorSignatureHTML}
+
+      <section class="content-section">
+        <header>Client Signature Fields</header>
         ${signaturesHTML}
-      </div>
+      </section>
 
-      <div class="certificate">
-        <h3>⚖️ Legal Certification</h3>
+      <section class="certification">
+        <header>Legal Certification</header>
         <p>
           This document certifies that the electronic signatures and data shown above were captured 
           at the date and time specified. These electronic signatures are legally binding and have 
@@ -230,13 +367,13 @@ export const generateSignatureDetailsHTML = (contract, signatureData, signerInfo
           including but not limited to the U.S. Electronic Signatures in Global and National Commerce Act (ESIGN), 
           the Uniform Electronic Transactions Act (UETA), and other relevant legislation.
         </p>
-      </div>
+      </section>
 
-      <div class="footer">
+      <footer class="main-footer">
         <p>This signature details page is automatically generated and attached to the contract.</p>
         <p>Document Generated: ${new Date().toLocaleString()}</p>
-        <p>Contract ID: ${contract.id}</p>
-      </div>
+        <p>Contract ID: ${contract?.id || 'Not specified'}</p>
+      </footer>
     </body>
     </html>
   `;
@@ -246,8 +383,8 @@ export const generateSignatureDetailsHTML = (contract, signatureData, signerInfo
  * Creates a printable signature details page
  * This can be saved as PDF and attached to the contract
  */
-export const createSignatureDetailsDocument = (contract, signatureData, signerInfo) => {
-  const html = generateSignatureDetailsHTML(contract, signatureData, signerInfo);
+export const createSignatureDetailsDocument = (contract, signatureData, signerInfo, vendorSignature) => {
+  const html = generateSignatureDetailsHTML(contract, signatureData, signerInfo, vendorSignature);
   
   // Create a blob from the HTML
   const blob = new Blob([html], { type: 'text/html' });
@@ -293,33 +430,31 @@ export const getUserIPAddress = async () => {
 /**
  * Example usage in your PlannerContract.jsx:
  * 
- * import { createSignatureDetailsDocument, getUserIPAddress } from './PDFSignatureAttachment';
+ * import { createSignatureDetailsDocument, getUserIPAddress } from './PlannerSigAttch.js';
+ * import VendorSignatureCanvas from './VendorSignatureCanvas';
  * 
- * const sendSignedContract = async (signatureDataParam) => {
- *   // ... existing code ...
+ * // Show vendor signature canvas first
+ * const handleVendorSign = async (vendorSignatureData) => {
+ *   // Store vendor signature
+ *   const vendorInfo = {
+ *     signatureData: vendorSignatureData.signatureData,
+ *     vendorName: vendorSignatureData.vendorName,
+ *     vendorEmail: vendorSignatureData.vendorEmail,
+ *     signedAt: vendorSignatureData.signedAt
+ *   };
  *   
- *   // Get IP address for audit trail
+ *   // Then proceed with client signing or final submission
+ * };
+ * 
+ * // When finalizing, include vendor signature
+ * const sendSignedContract = async (signatureDataParam, vendorSignatureData) => {
  *   const ipAddress = await getUserIPAddress();
  *   
  *   const signerInfo = {
  *     ipAddress: ipAddress,
  *     userAgent: navigator.userAgent,
- *     signedAt: new Date().toISOString()
- *   };
- *   
- *   // Create signature details document
- *   const signatureDoc = createSignatureDetailsDocument(
- *     selectedContract, 
- *     signatureDataParam,
- *     signerInfo
- *   );
- *   
- *   // Auto-download the signature details as HTML (can be printed to PDF)
- *   signatureDoc.download();
- *   
- *   // Or open print dialog (save as PDF option)
- *   // signatureDoc.print();
- *   
- *   // ... rest of your finalization code ...
- * };
- */
+ *     signedAt: new Date().toISOString(),
+ *     signerName: selectedContract.clientName,
+ *     signerEmail: selectedContract.clientEmail,
+ * 
+ **/

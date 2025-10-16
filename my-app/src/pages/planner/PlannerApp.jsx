@@ -41,13 +41,8 @@ const PlannerApp = () => {
 		{ id: "dashboard", label: "Dashboard", icon: BarChart3 },
 		{ id: "events", label: "Events", icon: Calendar },
 		{ id: "vendor", label: "Vendor Marketplace", icon: Users },
-		{
-			id: "schedule management",
-			label: "Schedule Management",
-			icon: Users,
-		},
 		{ id: "floorplan", label: "Floorplan", icon: MapPin },
-		{ id: "review", label: "Reviews", icon: FileText},
+		{ id: "review", label: "Reviews", icon: FileText },
 		{ id: "documents", label: "Documents", icon: FileText },
 	];
 
@@ -80,55 +75,52 @@ const PlannerApp = () => {
 	);
 
 	const renderCurrentPage = () => {
-    switch (activePage) {
-        case "dashboard":
-            return (
-                <PlannerDashboard
-                    data-testid="planner-dashboard"
-                    setActivePage={setActivePage}
-                    onSelectEvent={onSelectEvent} // ✅ Pass the handler
-                />
-            );
-        case "events":
-            return (
-                <PlannerCalendar
-                    setActivePage={setActivePage}
-                    onSelectEvent={onSelectEvent}
-                />
-            );
-        case "vendor":
-            return (
-                <PlannerVendorMarketplace
-                    setActivePage={setActivePage}
-                    event={selectedEvent}
-                />
-            );
-        case "floorplan":
-            return <PlannerFloorPlan setActivePage={setActivePage} />;
-        case "schedule management":
-            return <PlannerSchedules setActivePage={setActivePage} />;
-        case "documents":
-            return <PlannerContract setActivePage={setActivePage} />;
-        case "selected-event":
-            return (
-                <PlannerViewEvent
-                    event={selectedEvent}
-                    onOpenMarketplace={onOpenMarketplace}
-                    setActivePage={setActivePage}
-                />
-            );
-        case "review":
-            return <PlannerReview />;
-        default:
-            return (
-                <PlannerDashboard
-                    setActivePage={setActivePage}
-                    onSelectEvent={onSelectEvent} // ✅ Also here
-                />
-            );
-    }
-};
-
+		switch (activePage) {
+			case "dashboard":
+				return (
+					<PlannerDashboard
+						data-testid="planner-dashboard"
+						setActivePage={setActivePage}
+						onSelectEvent={onSelectEvent} // ✅ Pass the handler
+					/>
+				);
+			case "events":
+				return (
+					<PlannerCalendar
+						setActivePage={setActivePage}
+						onSelectEvent={onSelectEvent}
+					/>
+				);
+			case "vendor":
+				return (
+					<PlannerVendorMarketplace
+						setActivePage={setActivePage}
+						event={selectedEvent}
+					/>
+				);
+			case "floorplan":
+				return <PlannerFloorPlan setActivePage={setActivePage} />;
+			case "documents":
+				return <PlannerContract setActivePage={setActivePage} />;
+			case "selected-event":
+				return (
+					<PlannerViewEvent
+						event={selectedEvent}
+						onOpenMarketplace={onOpenMarketplace}
+						setActivePage={setActivePage}
+					/>
+				);
+			case "review":
+				return <PlannerReview />;
+			default:
+				return (
+					<PlannerDashboard
+						setActivePage={setActivePage}
+						onSelectEvent={onSelectEvent} // ✅ Also here
+					/>
+				);
+		}
+	};
 
 	const onSelectEvent = (event) => {
 		setSelectedEvent(event);

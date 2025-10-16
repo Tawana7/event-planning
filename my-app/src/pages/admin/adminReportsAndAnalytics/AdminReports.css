@@ -142,3 +142,8 @@
     color: var(--white);
     margin-left: 0;
 }
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.admin-spinner {width: 20vw; height: 20vw; color: var(--purple-700); animation: spin 2.5s linear infinite; margin-left: 40vw; margin-right: 40vw; margin-top: 10vw;}
+
+.admin-report-loading-screen p{ text-align: center; font-size: 7.5vh; color: var(--purple-700);}

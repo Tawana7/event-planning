@@ -325,6 +325,32 @@
   text-align: right;
 }
 
+/* FIXED: Special styling for initials input */
+.initials-input {
+  text-align: center;
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.2em !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%) !important;
+  border: 3px solid #7c3aed !important;
+  padding: 1rem !important;
+  font-family: 'Courier New', monospace;
+}
+
+.initials-input:focus {
+  background: white !important;
+  border-color: #6d28d9 !important;
+  box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.15) !important;
+}
+
+.initials-input::placeholder {
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 400;
+}
+
 /* Checkbox */
 .checkbox-label-planner {
   display: flex;
@@ -547,11 +573,6 @@
     height: auto;
   }
 
-  .pdf-viewer-section-planner {
-    max-height: 50vh;
-    height: 50vh;
-  }
-
   .pdf-viewer-wrapper-planner {
     padding: 1rem;
   }
@@ -638,6 +659,10 @@
     flex-direction: column;
     align-items: flex-start;
   }
+
+  .initials-input {
+    font-size: 1.2rem !important;
+  }
 }
 
 /* Smooth Scrolling */
@@ -691,3 +716,117 @@
   outline: 2px solid #2563eb;
   outline-offset: 2px;
 }
+
+/* Additional status badge styles for contract list */
+.status-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-badge.status-active {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.status-badge.status-draft {
+  background: #f3f4f6;
+  color: #4b5563;
+}
+
+.status-badge.status-pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.status-badge.status-partial {
+  background: #e0e7ff;
+  color: #3730a3;
+}
+
+.status-badge.status-completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.signature-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-left: 0.5rem;
+}
+
+.signature-badge.draft {
+  background: #f3f4f6;
+  color: #6b7280;
+}
+
+.signature-badge.sent {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.signature-badge.partially_signed {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.signature-badge.completed {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Toast notification styles */
+.toast-notification {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  background: #1f2937;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  font-size: 0.875rem;
+  font-weight: 500;
+  z-index: 9999;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Print styles */
+@media print {
+  .action-buttons-planner,
+  .btn-close-planner,
+  .clear-btn-planner {
+    display: none;
+  }
+
+  .planner-signature-container {
+    height: auto;
+  }
+
+  .pdf-viewer-section-planner,
+  .signature-fields-section-planner {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+}-viewer-section-planner {
+    max-height: 50vh;
+    height: 50vh;
+  }

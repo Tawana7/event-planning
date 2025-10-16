@@ -1,3 +1,5 @@
+/* adminVendorManagement/AdminVendorManagement.css */
+
 :root {
   --admin-vendor-management-text: #111827;
   --admin-vendor-management-muted-text: #6b7280;
@@ -8,13 +10,9 @@
   --admin-vendor-management-secondary: #1d4ed8;
   --admin-vendor-management-input-bg: #f3f4f6;
   --admin-vendor-management-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --admin-vendor-management-success: #10b981;
-  --admin-vendor-management-warning: #f59e0b;
-  --admin-vendor-management-error: #ef4444;
 }
 
-@media (prefers-color-scheme: dark) {
-:root {
+[data-theme="dark"] {
   --admin-vendor-management-text: #f9fafb;
   --admin-vendor-management-muted-text: #9ca3af;
   --admin-vendor-management-bg: #111827;
@@ -22,7 +20,6 @@
   --admin-vendor-management-card-border: #374151;
   --admin-vendor-management-input-bg: #374151;
   --admin-vendor-management-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 1px 2px -1px rgba(0, 0, 0, 0.3);
-}
 }
 
 .admin-vendor-management-container {
@@ -58,7 +55,6 @@
 .admin-vendor-management-heading {
   font-size: 1.4rem;
   margin-bottom: 1.5rem;
-  color: var(--admin-vendor-management-text);
 }
 
 /* Filters */
@@ -77,7 +73,6 @@
   background: var(--admin-vendor-management-input-bg);
   border-radius: 2rem;
   padding: 0.6rem 1rem;
-  min-width: 300px;
 }
 
 .admin-vendor-management-search svg {
@@ -107,7 +102,7 @@
 /* Vendor Grid */
 .admin-vendor-management-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 1.5rem;
 }
 
@@ -119,13 +114,11 @@
   transition: all 0.3s ease;
   border: 1px solid var(--admin-vendor-management-card-border);
   box-shadow: var(--admin-vendor-management-shadow);
-  display: flex;
-  flex-direction: column;
 }
 
 .admin-vendor-management-card:hover {
   transform: translateY(-6px);
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 .admin-vendor-management-card-image {
@@ -146,20 +139,6 @@
 .admin-vendor-management-card-info h4 {
   margin: 0.5rem 0;
   font-size: 1.2rem;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 4px 8px;
-  border-radius: 1rem;
-  color: white;
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  margin-bottom: 0.5rem;
 }
 
 .admin-vendor-management-category {
@@ -169,30 +148,10 @@
   border-radius: 1rem;
   color: var(--admin-vendor-management-muted-text);
   font-size: 0.8rem;
-  margin-bottom: 1rem;
-}
-
-.admin-vendor-management-card-stats {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin: 1rem 0;
-}
-
-.admin-vendor-management-stat {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
-  color: var(--admin-vendor-management-muted-text);
-  font-size: 0.8rem;
-}
-
-.admin-vendor-management-stat svg {
-  color: var(--admin-vendor-management-primary);
 }
 
 .admin-vendor-management-view-btn {
-  margin-top: auto;
+  margin-top: 1rem;
   background: var(--admin-vendor-management-primary);
   color: #ffffff;
   border: none;
@@ -209,11 +168,8 @@
 
 /* Popup Content */
 .admin-vendor-management-popup {
-  color: var(--popup-text-color);
+  color: var(--popup-text-color); /* Use popup's text color */
   text-align: center;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
 }
 
 .admin-vendor-management-popup-header {
@@ -231,14 +187,6 @@
   margin-bottom: 1rem;
 }
 
-.admin-vendor-management-popup-meta {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
 .admin-vendor-management-popup-category {
   background: var(--admin-vendor-management-input-bg);
   color: var(--admin-vendor-management-muted-text);
@@ -246,18 +194,7 @@
   border-radius: 20px;
   font-size: 0.9rem;
   display: inline-block;
-}
-
-.admin-vendor-management-popup-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.25rem;
-  padding: 5px 10px;
-  border-radius: 1rem;
-  color: white;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
+  margin-bottom: 1rem;
 }
 
 .admin-vendor-management-popup-body {
@@ -265,202 +202,21 @@
   font-size: 1rem;
 }
 
-.admin-vendor-management-description {
-  color: var(--admin-vendor-management-text);
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: var(--admin-vendor-management-input-bg);
-  border-radius: 8px;
-}
-
 .admin-vendor-management-contact {
   background: var(--admin-vendor-management-input-bg);
-  padding: 1.5rem;
+  padding: 1rem;
   border-radius: 10px;
-  margin: 1.5rem 0;
-}
-
-.admin-vendor-management-contact h4 {
-  margin-bottom: 1rem;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-contact p {
-  margin: 0.75rem 0;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.admin-vendor-management-contact svg {
-  color: var(--admin-vendor-management-primary);
-}
-
-/* Analytics Section */
-.admin-vendor-management-analytics {
-  margin: 1.5rem 0;
-}
-
-.admin-vendor-management-analytics h4 {
-  margin-bottom: 1rem;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 1rem;
   margin-top: 1rem;
 }
-
-.admin-vendor-management-stat-card {
-  background: var(--admin-vendor-management-input-bg);
-  padding: 1rem;
-  border-radius: 8px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+.admin-vendor-management-contact p {
+    margin-block: 0.5rem;
 }
 
-.admin-vendor-management-stat-card svg {
-  color: var(--admin-vendor-management-primary);
-}
-
-.admin-vendor-management-stat-value {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-stat-label {
-  font-size: 0.8rem;
-  color: var(--admin-vendor-management-muted-text);
-}
-
-/* Services Section */
-.admin-vendor-management-services {
-  margin: 1.5rem 0;
-}
-
-.admin-vendor-management-services h4 {
-  margin-bottom: 1rem;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-services-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.admin-vendor-management-service-item {
-  background: var(--admin-vendor-management-input-bg);
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid var(--admin-vendor-management-primary);
-}
-
-.admin-vendor-management-service-item h5 {
-  margin: 0 0 0.5rem 0;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-service-pricing {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  margin-bottom: 0.5rem;
-}
-
-.admin-vendor-management-service-pricing span {
-  background: var(--admin-vendor-management-card-bg);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: var(--admin-vendor-management-muted-text);
-}
-
-.admin-vendor-management-service-notes {
-  font-size: 0.9rem;
-  color: var(--admin-vendor-management-muted-text);
-  font-style: italic;
-  margin: 0;
-}
-
-/* Bookings Section */
-.admin-vendor-management-bookings {
-  margin: 1.5rem 0;
-}
-
-.admin-vendor-management-bookings h4 {
-  margin-bottom: 1rem;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-bookings-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.admin-vendor-management-booking-item {
-  background: var(--admin-vendor-management-input-bg);
-  padding: 1rem;
-  border-radius: 8px;
-  border-left: 4px solid var(--admin-vendor-management-warning);
-}
-
-.admin-vendor-management-booking-item h5 {
-  margin: 0 0 0.5rem 0;
-  color: var(--admin-vendor-management-text);
-}
-
-.admin-vendor-management-booking-details {
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-  font-size: 0.8rem;
-  color: var(--admin-vendor-management-muted-text);
-}
-
-/* Footer Actions */
 .admin-vendor-management-popup-footer {
   margin-top: 1.5rem;
   border-top: 1px solid var(--popup-border-color);
   padding-top: 1.5rem;
   text-align: center;
-}
-
-.admin-vendor-management-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.admin-vendor-management-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border: none;
-  border-radius: 2rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.admin-vendor-management-approve {
-  background: var(--admin-vendor-management-success);
-  color: white;
-}
-
-.admin-vendor-management-reject {
-  background: var(--admin-vendor-management-error);
-  color: white;
 }
 
 .admin-vendor-management-edit-btn {
@@ -486,5 +242,5 @@
   color: var(--admin-vendor-management-muted-text);
   font-style: italic;
   margin-top: 2rem;
-  grid-column: 1 / -1;
+  grid-column: 1 / -1; /* Make it span all columns */
 }

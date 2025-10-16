@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import "../../planner/PlannerAllEvents.css";
 import { getAuth } from "firebase/auth";
 import BASE_URL from "../../../apiConfig";
+import LoadingSpinner from "../../general/loadingspinner/LoadingSpinner";
 
 function EventCard({ event, onQuickView, onDeleteEvent }) {
 	function formatDate(dateString) {

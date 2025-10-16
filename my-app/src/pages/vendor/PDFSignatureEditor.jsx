@@ -1,22 +1,29 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Type, Edit3, Calendar, CheckSquare, X, Save, Send, Trash2 } from 'lucide-react';
+import { Edit3, Calendar, Type, Save, Send, Trash2 } from 'lucide-react';
 import './PDFSignatureEditor.css';
 
-const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
+const PDFSignatureEditor = ({ contractUrl, onSave, onSend, savedFields }) => {
   const [signatureFields, setSignatureFields] = useState([]);
   const [pdfDimensions] = useState({ width: 816, height: 1056 });
   const [estimatedPages, setEstimatedPages] = useState(1);
+  const [isSaved, setIsSaved] = useState(false);
   const pdfViewerRef = useRef(null);
 
+  // FIXED: Only signature, initial, and date fields
   const fieldTypes = [
     { type: 'signature', icon: Edit3, label: 'Signature', color: '#2563eb', defaultWidth: 200, defaultHeight: 60 },
     { type: 'initial', icon: Type, label: 'Initial', color: '#7c3aed', defaultWidth: 100, defaultHeight: 40 },
-    { type: 'date', icon: Calendar, label: 'Date', color: '#059669', defaultWidth: 120, defaultHeight: 30 },
-    { type: 'text', icon: Type, label: 'Text', color: '#d97706', defaultWidth: 150, defaultHeight: 30 },
-    { type: 'checkbox', icon: CheckSquare, label: 'Checkbox', color: '#dc2626', defaultWidth: 20, defaultHeight: 20 }
+    { type: 'date', icon: Calendar, label: 'Date', color: '#059669', defaultWidth: 120, defaultHeight: 30 }
   ];
 
   const signerRoles = ['vendor', 'client', 'witness'];
+
+  // Update saved status when savedFields changes
+  useEffect(() => {
+    if (savedFields) {
+      setIsSaved(true);
+    }
+  }, [savedFields]);
 
   // Detect PDF pages on load
   useEffect(() => {
@@ -73,11 +80,10 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
     
     // Calculate how many fields of this type already exist to stack them
     const existingFieldsOfType = signatureFields.filter(f => f.type === fieldType).length;
-    const verticalOffset = existingFieldsOfType * (fieldConfig.defaultHeight + 20); // 20px spacing
+    const verticalOffset = existingFieldsOfType * (fieldConfig.defaultHeight + 20);
     
-    // Position: bottom right of last page with padding and stacking
-    const xPosition = pageWidth - fieldConfig.defaultWidth - 50; // 50px from right
-    const yPosition = pageHeight - fieldConfig.defaultHeight - 80 - verticalOffset; // 80px from bottom + stacking
+    const xPosition = pageWidth - fieldConfig.defaultWidth - 50;
+    const yPosition = pageHeight - fieldConfig.defaultHeight - 80 - verticalOffset;
     
     const newField = {
       id: `field_${Date.now()}`,
@@ -99,6 +105,7 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
     };
 
     setSignatureFields([...signatureFields, newField]);
+    setIsSaved(false); // Mark as unsaved when fields change
   };
 
   const updateFieldProperty = (fieldId, property, value) => {
@@ -107,42 +114,56 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
         field.id === fieldId ? { ...field, [property]: value } : field
       )
     );
+    setIsSaved(false); // Mark as unsaved when fields change
   };
 
   const deleteField = (fieldId) => {
     setSignatureFields(fields => fields.filter(field => field.id !== fieldId));
+    setIsSaved(false); // Mark as unsaved when fields change
   };
 
   const handleSave = () => {
     if (signatureFields.length === 0) {
-      alert('Please add at least one signature field before saving.');
+      alert('⚠️ Please add at least one signature field before saving.');
       return;
     }
 
     const missingEmails = signatureFields.filter(field => !field.signerEmail);
     if (missingEmails.length > 0) {
-      alert('Please specify signer emails for all fields.');
+      alert('⚠️ Please specify signer emails for all fields.');
       return;
     }
 
-    console.log('Saving fields with positions:', signatureFields);
+    console.log('Saving fields:', signatureFields);
     onSave(signatureFields);
   };
 
   const handleSendForSignature = () => {
     if (signatureFields.length === 0) {
-      alert('Please add at least one signature field before sending.');
+      alert('⚠️ Please add at least one signature field before sending.');
+      return;
+    }
+
+    if (!isSaved) {
+      alert('⚠️ Please save the signature fields first before sending.');
       return;
     }
 
     const missingEmails = signatureFields.filter(field => !field.signerEmail);
     if (missingEmails.length > 0) {
-      alert('Please specify signer emails for all fields.');
+      alert('⚠️ Please specify signer emails for all fields.');
       return;
     }
 
-    console.log('Sending fields with positions:', signatureFields);
-    onSend(signatureFields);
+    const confirmSend = window.confirm(
+      '📧 Are you sure you want to send this contract for signature?\n\n' +
+      'The contract will be sent to the client for electronic signing.'
+    );
+
+    if (confirmSend) {
+      console.log('Sending fields:', signatureFields);
+      onSend(signatureFields);
+    }
   };
 
   const getFieldIcon = (type) => {
@@ -155,8 +176,8 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
       {/* PDF Viewer Section */}
       <div className="pdf-section-vendor">
         <div className="pdf-viewer-header-vendor">
-          <h3>Contract Document</h3>
-          <p>Review the contract - signature fields will be automatically placed at the bottom right of the last page</p>
+          <h3>📄 Contract Document</h3>
+          <p>Review the contract below - signature fields will be automatically placed at the bottom of the document</p>
         </div>
         
         <div className="pdf-viewer-container-vendor" ref={pdfViewerRef}>
@@ -181,8 +202,13 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
       {/* Signature Fields Section */}
       <div className="signature-fields-section-vendor">
         <div className="fields-header-vendor">
-          <h3>Signature Fields Setup</h3>
-          <p>Add signature fields that will appear at the bottom of the contract</p>
+          <h3>✏️ Signature Fields Setup</h3>
+          <p>Add the signature fields that the client needs to complete</p>
+          {isSaved && (
+            <div className="save-indicator">
+              ✅ Fields saved - You can now send for signature
+            </div>
+          )}
         </div>
 
         {/* Add Field Buttons */}
@@ -285,12 +311,6 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
                           <span>Required field</span>
                         </label>
                       </div>
-
-                      <div className="field-position-info-vendor">
-                        <span className="position-badge-vendor">
-                          📍 Page {field.position.page} - Bottom Right ({field.position.x}, {field.position.y})
-                        </span>
-                      </div>
                     </div>
 
                     <div className="field-card-footer-vendor">
@@ -304,20 +324,20 @@ const PDFSignatureEditor = ({ contractUrl, onSave, onSend }) => {
           )}
         </div>
 
-        {/* Action Buttons - FIXED at bottom with NO overlap */}
+        {/* Action Buttons */}
         <div className="action-buttons-fixed-vendor">
           <button 
             onClick={handleSave} 
-            className="btn-save-vendor"
+            className={`btn-save-vendor ${isSaved ? 'saved' : ''}`}
             disabled={signatureFields.length === 0}
           >
             <Save size={16} />
-            Save Fields
+            {isSaved ? 'Fields Saved ✓' : 'Save Fields'}
           </button>
           <button 
             onClick={handleSendForSignature} 
             className="btn-send-vendor"
-            disabled={signatureFields.length === 0}
+            disabled={signatureFields.length === 0 || !isSaved}
           >
             <Send size={16} />
             Send for Signature

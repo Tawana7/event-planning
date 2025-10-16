@@ -10,6 +10,7 @@ import PlannerTasks from "./PlannerTasks.jsx";
 import { format } from "date-fns";
 import BronzeFury from "./BronzeFury.jsx";
 import BASE_URL from "../../apiConfig";
+import PlannerSchedules from "./PlannerSchedules.jsx";
 
 //Code for the pop up when manually adding a guest **********
 function AddGuestPopup({ isOpen, onClose, onSave }) {
@@ -90,7 +91,7 @@ function AddGuestPopup({ isOpen, onClose, onSave }) {
 	if (!isOpen) return null;
 
 	return (
-		<section className="guest-popup-overlay" onClick={handleClose}>
+		<Popup isOpen={isOpen} onClose={handleClose}>
 			<section
 				className="guest-popup-content"
 				onClick={(e) => e.stopPropagation()}
@@ -239,7 +240,7 @@ function AddGuestPopup({ isOpen, onClose, onSave }) {
 					</section>
 				</section>
 			</section>
-		</section>
+		</Popup>
 	);
 }
 //End of code for the pop up when manually adding a guest **********
@@ -961,7 +962,7 @@ export default function PlannerViewEvent({ event, setActivePage }) {
 						}`}
 						onClick={() => setActiveTab("tasks")}
 					>
-						Tasks
+						My To-Do List
 					</button>
 					<button
 						className={`tab-btn ${
@@ -1232,9 +1233,9 @@ export default function PlannerViewEvent({ event, setActivePage }) {
 										Object.keys(eventData.tasks).length ===
 											0) && (
 										<PromptCard
-											title="No Tasks Yet"
-											message="Create a task list to stay organized and track your event planning progress."
-											buttonText="Add Tasks"
+											title="No To-Do List Yet"
+											message="Create a task on your To-Do list to stay organized and track your event planning progress."
+											buttonText="Add To-Do List Task"
 											onClick={() =>
 												setActiveTab("tasks")
 											}
@@ -1463,6 +1464,10 @@ export default function PlannerViewEvent({ event, setActivePage }) {
 							eventData={eventData}
 							setEventData={setEventData}
 						/>
+					)}
+
+					{activeTab === "schedule" && (
+						<PlannerSchedules event={eventData} />
 					)}
 				</section>
 			</section>

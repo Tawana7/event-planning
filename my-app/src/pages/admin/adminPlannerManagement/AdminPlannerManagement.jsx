@@ -1,10 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { auth } from "../../../firebase"; // Ensure this path is correct
-import { Search, Edit, UserX, UserCheck, Trash2 } from "lucide-react";
+import { auth } from "../../../firebase";
+import {
+	Search,
+	Edit,
+	Calendar,
+	MapPin,
+	Users,
+	DollarSign,
+} from "lucide-react";
 import Popup from "../../general/popup/Popup.jsx";
 import "./AdminPlannerManagement.css";
 import BASE_URL from "../../../apiConfig";
+import LoadingSpinner from "../../general/loadingspinner/LoadingSpinner.jsx";
 
 export default function PlannerManagement() {
 	const navigate = useNavigate();
@@ -18,6 +26,7 @@ export default function PlannerManagement() {
 	const [statusFilter, setStatusFilter] = useState("all");
 	const [isPopupOpen, setIsPopupOpen] = useState(false);
 	const [selectedPlanner, setSelectedPlanner] = useState(null);
+	const [plannerEvents, setPlannerEvents] = useState([]);
 
 	const getToken = () =>
 		auth.currentUser
@@ -29,7 +38,7 @@ export default function PlannerManagement() {
 		const fetchPlanners = async () => {
 			let user = auth.currentUser;
 			while (!user) {
-				await new Promise((res) => setTimeout(res, 50)); // wait 50ms
+				await new Promise((res) => setTimeout(res, 50));
 				user = auth.currentUser;
 			}
 			try {
@@ -55,8 +64,10 @@ export default function PlannerManagement() {
 	useEffect(() => {
 		let result = planners;
 		if (searchTerm) {
-			result = result.filter((p) =>
-				p.name.toLowerCase().includes(searchTerm.toLowerCase())
+			result = result.filter(
+				(p) =>
+					p.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					p.email?.toLowerCase().includes(searchTerm.toLowerCase())
 			);
 		}
 		if (statusFilter !== "all") {
@@ -65,24 +76,54 @@ export default function PlannerManagement() {
 		setFilteredPlanners(result);
 	}, [searchTerm, statusFilter, planners]);
 
-	const handleViewDetails = (planner) => {
+	// Fetch detailed events when a planner is selected
+	const fetchPlannerEvents = async (plannerId) => {
+		try {
+			const token = await getToken();
+			const response = await fetch(
+				`${BASE_URL}/public/user/${plannerId}/events`,
+				{
+					headers: { Authorization: `Bearer ${token}` },
+				}
+			);
+			if (response.ok) {
+				const data = await response.json();
+				setPlannerEvents(data.events || []);
+			}
+		} catch (err) {
+			console.error("Error fetching planner events:", err);
+			setPlannerEvents([]);
+		}
+	};
+
+	const handleViewDetails = async (planner) => {
 		setSelectedPlanner(planner);
+		await fetchPlannerEvents(planner.id);
 		setIsPopupOpen(true);
 	};
 
-	const handleEdit = (plannerId) => {
-		alert(`Navigating to edit page for planner ${plannerId}`);
+	const formatDate = (dateString) => {
+		if (!dateString) return "Not set";
+		const date = new Date(dateString);
+		return date.toLocaleDateString("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+		});
 	};
 
-	const handleUpdateStatus = async (plannerId, newStatus) => {
-		// ... (Logic to update status via API)
-		// This function would be similar to the one in your VendorApplications component
+	const formatCurrency = (amount) => {
+		if (!amount) return "$0";
+		return new Intl.NumberFormat("en-US", {
+			style: "currency",
+			currency: "USD",
+		}).format(amount);
 	};
 
 	if (isLoading)
 		return (
 			<main className="main-container">
-				<h3>Loading Planners...</h3>
+				<LoadingSpinner text="Loading planners..." />
 			</main>
 		);
 	if (error)
@@ -93,53 +134,62 @@ export default function PlannerManagement() {
 		);
 
 	return (
-		<main className="main-container planner-management-page">
-			<header className="page-header">
-				<div className="main-title">
-					<h3>Planner Management</h3>
-				</div>
-				<section className="filters-section">
-					<div className="search-bar">
+		<main className="admin-planner-management-page">
+			<header className="admin-planner-management-page-header">
+				<h3>Planner Management</h3>
+				<section className="admin-planner-management-filters-section">
+					<div className="admin-planner-management-search-bar">
 						<Search size={20} />
 						<input
 							type="text"
-							placeholder="Search by planner name..."
+							placeholder="Search by planner name or email..."
 							value={searchTerm}
 							onChange={(e) => setSearchTerm(e.target.value)}
 						/>
 					</div>
-					<select
-						value={statusFilter}
-						onChange={(e) => setStatusFilter(e.target.value)}
-					>
-						<option value="all">All Statuses</option>
-						<option value="active">Active</option>
-						<option value="suspended">Suspended</option>
-					</select>
 				</section>
 			</header>
 
-			<section className="planner-grid">
+			<section className="admin-planner-management-grid">
 				{filteredPlanners.length > 0 ? (
 					filteredPlanners.map((planner) => (
 						<article
 							key={planner.id}
-							className="planner-summary-card"
+							className="admin-planner-management-summary-card"
 						>
-							<div className="planner-card-info">
-								<h4>{planner.name}</h4>
+							<div className="admin-planner-management-card-info">
+								<img
+									src={
+										planner.profilePicture ||
+										"/default-avatar.png"
+									}
+									alt={planner.name}
+									className="admin-planner-management-profile-pic"
+									onError={(e) => {
+										e.target.src = "/default-avatar.png";
+									}}
+								/>
+								<h4>{planner.name || "Unnamed Planner"}</h4>
 								<p
-									className={`planner-status-tag status-${planner.status}`}
+									className={`admin-planner-management-status-tag admin-planner-management-status-${
+										planner.status || "active"
+									}`}
 								>
-									{planner.status}
+									{planner.status || "active"}
 								</p>
-								<div className="planner-stat">
-									<span>{planner.activeEvents}</span> Active
-									Events
+								<div className="admin-planner-management-stat">
+									<span>{planner.activeEvents || 0}</span>{" "}
+									Active Events
+								</div>
+								<div className="admin-planner-management-stat">
+									<span>
+										{planner.eventHistory?.length || 0}
+									</span>{" "}
+									Past Events
 								</div>
 							</div>
 							<button
-								className="btn-view-details"
+								className="admin-planner-management-btn-view-details"
 								onClick={() => handleViewDetails(planner)}
 							>
 								View Details
@@ -153,39 +203,129 @@ export default function PlannerManagement() {
 
 			<Popup isOpen={isPopupOpen} onClose={() => setIsPopupOpen(false)}>
 				{selectedPlanner && (
-					<div className="planner-modal-details">
-						<header className="planner-modal-header">
-							<h2 className="planner-modal-name">
-								{selectedPlanner.name}
+					<div className="admin-planner-management-modal-details">
+						<header className="admin-planner-management-modal-header">
+							<img
+								src={
+									selectedPlanner.profilePicture ||
+									"/default-avatar.png"
+								}
+								alt={selectedPlanner.name}
+								className="admin-planner-management-profile-pic"
+								onError={(e) => {
+									e.target.src = "/default-avatar.png";
+								}}
+							/>
+							<h2 className="admin-planner-management-modal-name">
+								{selectedPlanner.name || "Unnamed Planner"}
 							</h2>
 							<p
-								className={`planner-status-tag status-${selectedPlanner.status}`}
+								className={`admin-planner-management-status-tag admin-planner-management-status-${
+									selectedPlanner.status || "active"
+								}`}
 							>
-								{selectedPlanner.status}
+								{selectedPlanner.status || "active"}
 							</p>
 						</header>
-						<section className="planner-modal-body">
-							<div className="planner-contact-info">
+						<section className="admin-planner-management-modal-body">
+							<div className="admin-planner-management-contact-info">
 								<p>
 									<strong>Email:</strong>{" "}
-									{selectedPlanner.email}
+									{selectedPlanner.email || "Not provided"}
 								</p>
 								<p>
 									<strong>Phone:</strong>{" "}
-									{selectedPlanner.phone}
+									{selectedPlanner.phone || "Not provided"}
 								</p>
 								<p>
 									<strong>Active Events:</strong>{" "}
-									{selectedPlanner.activeEvents}
+									{selectedPlanner.activeEvents || 0}
+								</p>
+								<p>
+									<strong>Total Events:</strong>{" "}
+									{plannerEvents.length}
 								</p>
 							</div>
+
+							<div className="admin-planner-management-events">
+								<h4>Recent Events ({plannerEvents.length})</h4>
+								{plannerEvents.length > 0 ? (
+									<ul>
+										{plannerEvents.map((event) => (
+											<li key={event.id}>
+												<div className="admin-planner-management-event-header">
+													<strong>
+														{event.name ||
+															"Unnamed Event"}
+													</strong>
+													<span
+														className={`admin-planner-management-event-status admin-planner-management-event-status-${
+															event.status ||
+															"planning"
+														}`}
+													>
+														{event.status ||
+															"planning"}
+													</span>
+												</div>
+												<div className="admin-planner-management-event-details">
+													<div className="admin-planner-management-event-detail">
+														<Calendar size={16} />
+														<span>
+															{formatDate(
+																event.date
+															)}
+														</span>
+													</div>
+													{event.location && (
+														<div className="admin-planner-management-event-detail">
+															<MapPin size={16} />
+															<span>
+																{event.location}
+															</span>
+														</div>
+													)}
+													{event.expectedGuestCount && (
+														<div className="admin-planner-management-event-detail">
+															<Users size={16} />
+															<span>
+																{
+																	event.expectedGuestCount
+																}{" "}
+																guests
+															</span>
+														</div>
+													)}
+													{event.budget && (
+														<div className="admin-planner-management-event-detail">
+															<DollarSign
+																size={16}
+															/>
+															<span>
+																{formatCurrency(
+																	event.budget
+																)}
+															</span>
+														</div>
+													)}
+												</div>
+												{event.description && (
+													<p className="admin-planner-management-event-description">
+														{event.description}
+													</p>
+												)}
+											</li>
+										))}
+									</ul>
+								) : (
+									<p>No events found for this planner.</p>
+								)}
+							</div>
 						</section>
-						<footer className="planner-modal-footer">
-							<button
-								className="btn-edit"
-								onClick={() => handleEdit(selectedPlanner.id)}
-							>
-								<Edit size={16} /> Edit Planner Details
+						<footer className="admin-planner-management-modal-footer">
+							<button className="admin-planner-management-btn-edit">
+								<Edit size={16} />
+								Edit Planner
 							</button>
 						</footer>
 					</div>

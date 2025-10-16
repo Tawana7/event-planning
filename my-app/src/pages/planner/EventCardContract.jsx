@@ -28,7 +28,6 @@ function formatDate(date) {
 
 function EventCard({ eventData }) {
 
-    // Helper function to get contract status display
     const getContractStatusDisplay = useCallback((contract) => {
         if (!contract.signatureWorkflow?.isElectronic) {
             return { text: "Active", class: "active" };
@@ -49,7 +48,7 @@ function EventCard({ eventData }) {
                 return { text: "Active", class: "active" };
         }
     }, []);
-    
+
     // Helper function to check if contract is actually signed by client
     const isContractSignedByClient = useCallback((contract) => {
         // If no signature fields, it's not an e-signature contract

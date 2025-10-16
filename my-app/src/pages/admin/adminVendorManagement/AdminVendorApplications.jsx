@@ -71,7 +71,6 @@ function AdminVendorApplications() {
 
 	return (
 		<section className="main-container">
-			<h1>Pending Vendor Applications</h1>
 			<section className="applications-list">
 				{applications.length > 0 ? (
 					<table className="vendor-table">

@@ -7,6 +7,7 @@ import AdminReportsVendorsDetailedCharts from "./AdminReportsVendorsDetailedChar
 import AdminReportsPlannersDetailedCharts from "./AdminReportsPlannersDetailedCharts";
 import AdminReportsFinancialDetailedCharts from "./AdminReportsFinancialDetailedCharts";
 import Popup from "../../general/popup/Popup.jsx";
+import LoadingSpinner from "../../general/loadingspinner/LoadingSpinner.jsx";
 import {
 	Calendar,
 	Users,
@@ -74,12 +75,8 @@ const AdminReports = () => {
 		setIsPopupOpen(true);
 	};
 
-	if (isLoading)
-		return (
-			<section className="admin-report-loading-screen">
-				<p>Loading analytics...</p>
-			</section>
-		);
+	if (isLoading) return <LoadingSpinner text="Loading analytics..." />;
+
 	if (error)
 		return (
 			<section className="admin-report-error-container">

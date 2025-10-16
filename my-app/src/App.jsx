@@ -33,7 +33,6 @@ import AdminReports from "./pages/admin/adminReportsAndAnalytics/AdminReports.js
 import AdminVendorApplications from "./pages/admin/adminVendorManagement/AdminVendorApplications.jsx";
 import AdminCreateProfile from "./pages/admin/adminProfile/AdminCreateProfile.jsx";
 import AdminProfile from "./pages/admin/adminProfile/AdminProfile.jsx";
-import AdminProfileEdit from "./pages/admin/adminProfile/AdminProfileEdit.jsx";
 
 function App() {
 	return (
@@ -105,10 +104,6 @@ function App() {
 					element={<AdminCreateProfile />}
 				/>
 				<Route path="/admin/my-profile" element={<AdminProfile />} />
-				<Route
-					path="/admin-edit-profile"
-					element={<AdminProfileEdit />}
-				/>
 				<Route
 					path="/admin/planner-management"
 					element={<AdminPlannerManagement />}

@@ -30,14 +30,15 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     }
   }, [contract]);
 
-  // Initialize canvases with white background
+  // Initialize canvases with white background (ONLY for signature fields, not initials)
   useEffect(() => {
     const clientFields = contract.signatureFields?.filter(
-      field => field.signerRole === 'client' && !field.signed
+      field => field.signerRole === 'client' && field.signed !== true
     ) || [];
 
     clientFields.forEach((field) => {
-      if ((field.type === 'signature' || field.type === 'initial') && canvasRefs.current[field.id]) {
+      // FIXED: Only initialize canvas for signature fields, not initials
+      if (field.type === 'signature' && canvasRefs.current[field.id]) {
         const canvas = canvasRefs.current[field.id];
         const ctx = canvas.getContext('2d');
         
@@ -57,15 +58,16 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     });
   }, [contract, signatureData]);
 
-  // Filter fields for client/planner to sign
+  // FIXED: Filter fields for client to sign - exclude already signed fields
   const clientFields = contract.signatureFields?.filter(
-    field => field.signerRole === 'client' && !field.signed
+    field => field.signerRole === 'client' && field.signed !== true
   ) || [];
 
-  // Check if already completed
-  const isCompleted = contract.signatureWorkflow?.workflowStatus === 'completed';
+  // FIXED: Check if already completed more strictly
+  const isCompleted = contract.signatureWorkflow?.workflowStatus === 'completed' &&
+                      clientFields.length === 0;
 
-  // Canvas drawing functions for signature/initial fields
+  // Canvas drawing functions for signature fields ONLY
   const startDrawing = (fieldId, e) => {
     const canvas = canvasRefs.current[fieldId];
     if (!canvas) return;
@@ -73,7 +75,6 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     const rect = canvas.getBoundingClientRect();
     const ctx = canvas.getContext('2d');
     
-    // Get coordinates (handle both mouse and touch)
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     
@@ -88,13 +89,12 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
   const handleSign = (fieldId, e) => {
     if (!canvasRefs.current[`${fieldId}_isDrawing`]) return;
     
-    e.preventDefault(); // Prevent scrolling on touch devices
+    e.preventDefault();
     
     const canvas = canvasRefs.current[fieldId];
     const rect = canvas.getBoundingClientRect();
     const ctx = canvas.getContext('2d');
     
-    // Get coordinates (handle both mouse and touch)
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
     
@@ -103,7 +103,6 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
       y: clientY - rect.top,
     };
 
-    // IMPORTANT: Set stroke style to BLACK so it's visible!
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 2.5;
     ctx.lineCap = 'round';
@@ -127,7 +126,6 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     
     const canvas = canvasRefs.current[fieldId];
     if (canvas) {
-      // Save the canvas data as base64
       setSignatureData(prev => ({
         ...prev,
         [fieldId]: canvas.toDataURL('image/png'),
@@ -139,7 +137,6 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     const canvas = canvasRefs.current[fieldId];
     if (canvas) {
       const ctx = canvas.getContext('2d');
-      // Clear and redraw white background
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
@@ -177,6 +174,16 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
     }));
   };
 
+  // FIXED: New handler for initials as text input
+  const handleInitialsChange = (fieldId, value) => {
+    // Limit to 3-4 characters for initials
+    const initials = value.toUpperCase().slice(0, 4);
+    setSignatureData(prev => ({
+      ...prev,
+      [fieldId]: initials
+    }));
+  };
+
   const handleSaveDraft = async () => {
     if (Object.keys(signatureData).length === 0) {
       alert('Please fill in at least one field before saving draft');
@@ -194,7 +201,6 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
   };
 
   const handleFinalize = async () => {
-    // Check required fields
     const requiredFields = clientFields.filter(f => f.required);
     const missingRequired = requiredFields.filter(f => !signatureData[f.id]);
     
@@ -245,7 +251,8 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
         </div>
 
         <div className="field-body-planner">
-          {(field.type === 'signature' || field.type === 'initial') && (
+          {/* FIXED: Only signature fields use canvas */}
+          {field.type === 'signature' && (
             <div className="canvas-container-planner">
               <div className="canvas-wrapper">
                 <canvas
@@ -283,7 +290,30 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
                 </button>
               )}
               <p className="canvas-hint-planner">
-                ✍️ {field.type === 'signature' ? 'Draw your signature above using your mouse or touchscreen' : 'Draw your initials above'}
+                ✏️ Draw your signature above using your mouse or touchscreen
+              </p>
+            </div>
+          )}
+
+          {/* FIXED: Initials now use text input instead of canvas */}
+          {field.type === 'initial' && (
+            <div className="text-field-wrapper">
+              <input
+                type="text"
+                value={signatureData[field.id] || ''}
+                onChange={e => handleInitialsChange(field.id, e.target.value)}
+                placeholder="Enter your initials (e.g., JD)"
+                className="text-input-planner initials-input"
+                maxLength={4}
+                style={{ 
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.1em',
+                  fontWeight: '600',
+                  fontSize: '1.1rem'
+                }}
+              />
+              <p className="canvas-hint-planner" style={{ borderLeftColor: fieldType.color }}>
+                ✍️ Type your initials (2-4 characters, will be converted to uppercase)
               </p>
             </div>
           )}
@@ -390,7 +420,7 @@ const PlannerSignatureView = ({ contract, onFinalize, onSaveDraft, onClose }) =>
       {/* Signature Fields Section */}
       <div className="signature-fields-section-planner">
         <div className="fields-header-planner">
-          <h3>✍️ Complete Signature Fields</h3>
+          <h3>✏️ Complete Signature Fields</h3>
           <p>The vendor has configured {clientFields.length} field{clientFields.length !== 1 ? 's' : ''} for you to complete</p>
           <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>
             Fields marked with <span style={{color: '#dc2626', fontWeight: 'bold'}}>*</span> are required

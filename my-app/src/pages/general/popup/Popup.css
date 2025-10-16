@@ -1,3 +1,26 @@
+:root {
+  /* --- Light Theme (Default) --- */
+  --popup-overlay-bg: rgba(0, 0, 0, 0.7);
+  --popup-content-bg: #ffffff;
+  --popup-close-btn-color: #6b7280;
+  --popup-close-btn-hover-bg: #f3f4f6;
+  --popup-scrollbar-track-bg: transparent;
+  --popup-scrollbar-thumb-bg: #a0a0a0;
+  --popup-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+  /* --- Dark Theme Overrides --- */
+  :root {
+    --popup-overlay-bg: rgba(17, 24, 39, 0.7);
+    --popup-content-bg: #1f2937; /* Dark gray */
+    --popup-close-btn-color: #9ca3af;
+    --popup-close-btn-hover-bg: #374151;
+    --popup-scrollbar-thumb-bg: #4b5563;
+    --popup-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.3);
+  }
+}
+
 .popup-overlay{
     position: fixed;
     inset: 0;
@@ -7,7 +30,7 @@
     justify-content: center; 
     align-items: center;       
     padding: 0.5rem;
-    background-color: rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7); 
     backdrop-filter: blur(5px);
     z-index: 9999;
 }
@@ -16,7 +39,7 @@
     max-width: none;
     width: 95vw;
     max-height: 95vh;
-    background: white;
+    background: var(--popup-content-bg);
     border-radius: 8px;
     padding: 1rem;
     box-sizing: border-box;

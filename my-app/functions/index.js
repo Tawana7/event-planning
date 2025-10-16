@@ -2852,9 +2852,8 @@ app.put('/admin/me', authenticate, async (req, res) => {
 
     await db.collection('Admin').doc(req.uid).update({ fullName,
       phone,
-      email,
       ...(profilePicURL && { profilePic: profilePicURL }),
-      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      updatedAt: 'admin.firestore.FieldValue.serverTimestamp()',
     });
 
     res.json({ message: 'Profile updated successfully' });
@@ -3071,7 +3070,7 @@ app.post('/contracts/:contractId/signature-fields', authenticate, async (req, re
  */
 app.get('/admin/vendors', authenticate, async (req, res) => {
   try {
-    const snapshot = await db.collection('Vendor').get();
+    const snapshot = await db.collection('Vendor').where('status', '==', 'approved').get();
     if (snapshot.empty) {
       return res.json([]);
     }
@@ -3089,12 +3088,19 @@ app.get('/admin/vendors', authenticate, async (req, res) => {
 // Get a list of all planners.
 app.get('/admin/planners', authenticate, async (req, res) => {
   try {
-    const snapshot = await db.collection('Planner').get();
-    if (snapshot.empty) {
+    const plannersSnapshot = await db.collection('Planner').get();
+    if (plannersSnapshot.empty) {
       return res.json([]);
     }
-    const planners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(planners);
+
+    const plannersData = await Promise.all(plannersSnapshot.docs.map(async (doc) => {
+      const planner = { id: doc.id, ...doc.data() };
+      const eventsSnapshot = await db.collection('Event').where('plannerId', '==', doc.id).get();
+      planner.events = eventsSnapshot.docs.map(eventDoc => ({ id: eventDoc.id, ...eventDoc.data() }));
+      return planner;
+    }));
+
+    res.json(plannersData);
   } catch (err) {
     console.error('Error fetching planners:', err);
     res.status(500).json({ message: 'Server error while fetching planners' });
@@ -3371,25 +3377,6 @@ app.get('/admin/vendors', authenticate, async (req, res) => {
   } catch (err) {
     console.error('Error fetching vendors:', err);
     res.status(500).json({ message: 'Server error while fetching vendors' });
-  }
-});
-
-/**
- * @route   GET /api/admin/planners
- * @desc    Get a list of all planners.
- * @access  Private (Admin Only)
- */
-app.get('/admin/planners', authenticate, async (req, res) => {
-  try {
-    const snapshot = await db.collection('Planner').get();
-    if (snapshot.empty) {
-      return res.json([]);
-    }
-    const planners = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    res.json(planners);
-  } catch (err) {
-    console.error('Error fetching planners:', err);
-    res.status(500).json({ message: 'Server error while fetching planners' });
   }
 });
 

@@ -23,9 +23,10 @@ import {
 import { getAuth } from "firebase/auth";
 import "./PlannerSchedules.css";
 import BASE_URL from "../../apiConfig";
+import Popup from "../general/popup/Popup.jsx";
 
-export default function PlannerSchedules() {
-	const [selectedEvent, setSelectedEvent] = useState(null);
+export default function PlannerSchedules({ event: initialEvent }) {
+	const [selectedEvent, setSelectedEvent] = useState(initialEvent);
 	const [schedules, setSchedules] = useState({});
 	const [showScheduleInputModal, setShowScheduleInputModal] = useState(false);
 	const [showExportModal, setShowExportModal] = useState(false);
@@ -287,9 +288,12 @@ export default function PlannerSchedules() {
 		async function loadEvents() {
 			const events = await fetchEvents();
 			setEvents(events);
+			if (initialEvent) {
+				handleEventSelect(initialEvent);
+			}
 		}
 		loadEvents();
-	}, []);
+	}, [initialEvent]);
 
 	// Check if schedule is PDF or items list
 	const isSchedulePDF = (schedule) => {
@@ -1275,311 +1279,294 @@ export default function PlannerSchedules() {
 			</main>
 
 			{/* Create Schedule Modal */}
-			{showCreateScheduleModal && (
-				<section className="ps-modal-overlay" onClick={closeModals}>
-					<section
-						className="ps-modal"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<section className="ps-modal-header">
-							<h3>Create New Schedule</h3>
-							<button
-								onClick={closeModals}
-								className="ps-modal-close"
-							>
-								<X className="ps-icon" />
-							</button>
+			<Popup isOpen={showCreateScheduleModal} onClose={closeModals}>
+				<section
+					className="ps-modal"
+					onClick={(e) => e.stopPropagation()}
+				>
+					<section className="ps-modal-header">
+						<h3>Create New Schedule</h3>
+						<button
+							onClick={closeModals}
+							className="ps-modal-close"
+						>
+							<X className="ps-icon" />
+						</button>
+					</section>
+					<section className="ps-modal-content">
+						<section className="ps-form-group">
+							<label>Schedule Title</label>
+							<input
+								type="text"
+								value={newScheduleTitle}
+								onChange={(e) =>
+									setNewScheduleTitle(e.target.value)
+								}
+								className="ps-input"
+								placeholder="Enter schedule name (e.g., Main Event Timeline)"
+							/>
 						</section>
-						<section className="ps-modal-content">
-							<section className="ps-form-group">
-								<label>Schedule Title</label>
-								<input
-									type="text"
-									value={newScheduleTitle}
-									onChange={(e) =>
-										setNewScheduleTitle(e.target.value)
+						<section>
+							<input
+								type="file"
+								accept="application/pdf"
+								ref={fileInputRef}
+								style={{ display: "none" }}
+								onChange={(e) => {
+									if (e.target.files?.[0]) {
+										setSelectedPdf(e.target.files[0]);
+										setPdfIsSelected(true);
+										setNewScheduleTitle(
+											String(e.target.files[0].name)
+										);
 									}
-									className="ps-input"
-									placeholder="Enter schedule name (e.g., Main Event Timeline)"
-								/>
-							</section>
-							<section>
-								<input
-									type="file"
-									accept="application/pdf"
-									ref={fileInputRef}
-									style={{ display: "none" }}
-									onChange={(e) => {
-										if (e.target.files?.[0]) {
-											setSelectedPdf(e.target.files[0]);
-											setPdfIsSelected(true);
-											setNewScheduleTitle(
-												String(e.target.files[0].name)
-											);
-										}
-									}}
-								/>
+								}}
+							/>
 
-								{selectedPdf && (
-									<p className="pdf-selected">
-										Selected PDF: {selectedPdf.name}
-									</p>
-								)}
-							</section>
-							<section className="ps-create-options">
-								<button
-									onClick={() =>
-										handleScheduleCreate("manual")
-									}
-									disabled={!newScheduleTitle.trim()}
-									className="ps-create-option"
-								>
-									<Edit3 className="ps-create-icon" />
-									<section>
-										<section className="ps-option-title">
-											Create Manually
-										</section>
-										<section className="ps-option-subtitle">
-											Build schedule item by item
-										</section>
-									</section>
-								</button>
-								<button
-									onClick={() =>
-										handleScheduleCreate("upload")
-									}
-									className="ps-create-option"
-								>
-									<Upload className="ps-create-icon" />
-									<section>
-										<section className="ps-option-title">
-											Upload PDF
-										</section>
-										<section className="ps-option-subtitle">
-											Store and track externally created
-											schedules
-										</section>
-									</section>
-								</button>
-							</section>
-						</section>
-						<section className="ps-modal-footer">
-							<button
-								onClick={closeModals}
-								className="ps-btn ps-btn-secondary"
-							>
-								Cancel
-							</button>
-							{pdfIsSelected && (
-								<button
-									onClick={handleFileUpload}
-									className="ps-btn ps-btn-secondary"
-								>
-									Save
-								</button>
+							{selectedPdf && (
+								<p className="pdf-selected">
+									Selected PDF: {selectedPdf.name}
+								</p>
 							)}
 						</section>
-					</section>
-				</section>
-			)}
-
-			{/* Schedule Input Modal */}
-			{showScheduleInputModal && (
-				<section className="ps-modal-overlay" onClick={closeModals}>
-					<section
-						className="ps-modal ps-modal-large"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<section className="ps-modal-header">
-							<h3>
-								Add Schedule Item -{" "}
-								{selectedEventForSchedule?.name ||
-									selectedEvent?.name}
-							</h3>
+						<section className="ps-create-options">
 							<button
-								onClick={closeModals}
-								className="ps-modal-close"
+								onClick={() => handleScheduleCreate("manual")}
+								disabled={!newScheduleTitle.trim()}
+								className="ps-create-option"
 							>
-								<X className="ps-icon" />
+								<Edit3 className="ps-create-icon" />
+								<section>
+									<section className="ps-option-title">
+										Create Manually
+									</section>
+									<section className="ps-option-subtitle">
+										Build schedule item by item
+									</section>
+								</section>
+							</button>
+							<button
+								onClick={() => handleScheduleCreate("upload")}
+								className="ps-create-option"
+							>
+								<Upload className="ps-create-icon" />
+								<section>
+									<section className="ps-option-title">
+										Upload PDF
+									</section>
+									<section className="ps-option-subtitle">
+										Store and track externally created
+										schedules
+									</section>
+								</section>
 							</button>
 						</section>
-						<section className="ps-modal-content">
-							<section className="ps-form-row">
-								<section className="ps-form-group">
-									<label htmlFor="time">Time</label>
-									<input
-										id="time"
-										type="time"
-										value={newScheduleItem.time}
-										onChange={(e) =>
-											setNewScheduleItem((prev) => ({
-												...prev,
-												time: e.target.value,
-											}))
-										}
-										className="ps-input"
-									/>
-								</section>
-								<section className="ps-form-group">
-									<label htmlFor="duration">
-										Duration (minutes)
-									</label>
-									<input
-										id="duration"
-										type="number"
-										value={newScheduleItem.duration}
-										onChange={(e) =>
-											setNewScheduleItem((prev) => ({
-												...prev,
-												duration: e.target.value,
-											}))
-										}
-										className="ps-input"
-										placeholder="60"
-									/>
-								</section>
-							</section>
+					</section>
+					<section className="ps-modal-footer">
+						<button
+							onClick={closeModals}
+							className="ps-btn ps-btn-secondary"
+						>
+							Cancel
+						</button>
+						{pdfIsSelected && (
+							<button
+								onClick={handleFileUpload}
+								className="ps-btn ps-btn-secondary"
+							>
+								Save
+							</button>
+						)}
+					</section>
+				</section>
+			</Popup>
+
+			{/* Schedule Input Modal */}
+			<Popup isOpen={showScheduleInputModal} onClose={closeModals}>
+				<section
+					className="ps-modal ps-modal-large"
+					onClick={(e) => e.stopPropagation()}
+				>
+					<section className="ps-modal-header">
+						<h3>
+							Add Schedule Item -{" "}
+							{selectedEventForSchedule?.name ||
+								selectedEvent?.name}
+						</h3>
+						<button
+							onClick={closeModals}
+							className="ps-modal-close"
+						>
+							<X className="ps-icon" />
+						</button>
+					</section>
+					<section className="ps-modal-content">
+						<section className="ps-form-row">
 							<section className="ps-form-group">
-								<label htmlFor="title">Title</label>
+								<label htmlFor="time">Time</label>
 								<input
-									id="title"
-									type="text"
-									value={newScheduleItem.title}
+									id="time"
+									type="time"
+									value={newScheduleItem.time}
 									onChange={(e) =>
 										setNewScheduleItem((prev) => ({
 											...prev,
-											title: e.target.value,
+											time: e.target.value,
 										}))
 									}
 									className="ps-input"
-									placeholder="Event title"
 								/>
 							</section>
 							<section className="ps-form-group">
-								<label>Description</label>
-								<textarea
-									value={newScheduleItem.description}
+								<label htmlFor="duration">
+									Duration (minutes)
+								</label>
+								<input
+									id="duration"
+									type="number"
+									value={newScheduleItem.duration}
 									onChange={(e) =>
 										setNewScheduleItem((prev) => ({
 											...prev,
-											description: e.target.value,
+											duration: e.target.value,
 										}))
 									}
-									className="ps-textarea"
-									rows={4}
-									placeholder="Event description"
+									className="ps-input"
+									placeholder="60"
 								/>
 							</section>
 						</section>
-						<section className="ps-modal-footer">
-							<button
-								onClick={closeModals}
-								className="ps-btn ps-btn-secondary"
-							>
-								Cancel
-							</button>
-							<button
-								onClick={saveScheduleAndClose}
-								disabled={
-									!newScheduleItem.time ||
-									!newScheduleItem.title
+						<section className="ps-form-group">
+							<label htmlFor="title">Title</label>
+							<input
+								id="title"
+								type="text"
+								value={newScheduleItem.title}
+								onChange={(e) =>
+									setNewScheduleItem((prev) => ({
+										...prev,
+										title: e.target.value,
+									}))
 								}
-								className="ps-btn ps-btn-primary"
-							>
-								<Save className="ps-icon" />
-								Save Item
-							</button>
+								className="ps-input"
+								placeholder="Event title"
+							/>
+						</section>
+						<section className="ps-form-group">
+							<label>Description</label>
+							<textarea
+								value={newScheduleItem.description}
+								onChange={(e) =>
+									setNewScheduleItem((prev) => ({
+										...prev,
+										description: e.target.value,
+									}))
+								}
+								className="ps-textarea"
+								rows={4}
+								placeholder="Event description"
+							/>
 						</section>
 					</section>
+					<section className="ps-modal-footer">
+						<button
+							onClick={closeModals}
+							className="ps-btn ps-btn-secondary"
+						>
+							Cancel
+						</button>
+						<button
+							onClick={saveScheduleAndClose}
+							disabled={
+								!newScheduleItem.time || !newScheduleItem.title
+							}
+							className="ps-btn ps-btn-primary"
+						>
+							<Save className="ps-icon" />
+							Save Item
+						</button>
+					</section>
 				</section>
-			)}
+			</Popup>
 
 			{/* Export Modal */}
-			{showExportModal && (
-				<section className="ps-modal-overlay" onClick={closeModals}>
-					<section
-						className="ps-modal"
-						onClick={(e) => e.stopPropagation()}
-					>
-						<section className="ps-modal-header">
-							<h3>Export Schedule</h3>
+			<Popup isOpen={showExportModal} onClose={closeModals}>
+				<section
+					className="ps-modal"
+					onClick={(e) => e.stopPropagation()}
+				>
+					<section className="ps-modal-header">
+						<h3>Export Schedule</h3>
+						<button
+							onClick={closeModals}
+							className="ps-modal-close"
+						>
+							<X className="ps-icon" />
+						</button>
+					</section>
+					<section className="ps-modal-content">
+						<p>
+							Export "{selectedEvent?.name}" schedule in your
+							preferred format:
+						</p>
+						<section className="ps-export-options">
 							<button
-								onClick={closeModals}
-								className="ps-modal-close"
+								onClick={() =>
+									exportSchedule("pdf", selectedScheduleIndex)
+								}
+								className="ps-export-option"
 							>
-								<X className="ps-icon" />
+								<FileText className="ps-export-icon" />
+								<section>
+									<section>PDF Document</section>
+									<small>
+										Formatted schedule for printing
+									</small>
+								</section>
 							</button>
-						</section>
-						<section className="ps-modal-content">
-							<p>
-								Export "{selectedEvent?.name}" schedule in your
-								preferred format:
-							</p>
-							<section className="ps-export-options">
-								<button
-									onClick={() =>
-										exportSchedule(
-											"pdf",
-											selectedScheduleIndex
-										)
-									}
-									className="ps-export-option"
-								>
-									<FileText className="ps-export-icon" />
-									<section>
-										<section>PDF Document</section>
-										<small>
-											Formatted schedule for printing
-										</small>
-									</section>
-								</button>
-								<button
-									onClick={() =>
-										exportSchedule(
-											"csv",
-											selectedScheduleIndex
-										)
-									}
-									className="ps-export-option"
-								>
-									<Database className="ps-export-icon" />
-									<section>
-										<section>CSV Spreadsheet</section>
-										<small>
-											Open in Excel or Google Sheets
-										</small>
-									</section>
-								</button>
-								<button
-									onClick={() =>
-										exportSchedule(
-											"json",
-											selectedScheduleIndex
-										)
-									}
-									className="ps-export-option"
-								>
-									<Database className="ps-export-icon" />
-									<section>
-										<section>JSON Data</section>
-										<small>
-											Structured data for developers
-										</small>
-									</section>
-								</button>
-							</section>
-						</section>
-						<section className="ps-modal-footer">
 							<button
-								onClick={closeModals}
-								className="ps-btn ps-btn-secondary"
+								onClick={() =>
+									exportSchedule("csv", selectedScheduleIndex)
+								}
+								className="ps-export-option"
 							>
-								Cancel
+								<Database className="ps-export-icon" />
+								<section>
+									<section>CSV Spreadsheet</section>
+									<small>
+										Open in Excel or Google Sheets
+									</small>
+								</section>
+							</button>
+							<button
+								onClick={() =>
+									exportSchedule(
+										"json",
+										selectedScheduleIndex
+									)
+								}
+								className="ps-export-option"
+							>
+								<Database className="ps-export-icon" />
+								<section>
+									<section>JSON Data</section>
+									<small>
+										Structured data for developers
+									</small>
+								</section>
 							</button>
 						</section>
 					</section>
+					<section className="ps-modal-footer">
+						<button
+							onClick={closeModals}
+							className="ps-btn ps-btn-secondary"
+						>
+							Cancel
+						</button>
+					</section>
 				</section>
-			)}
+			</Popup>
 		</section>
 	);
 }
