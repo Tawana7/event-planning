@@ -1,5 +1,5 @@
 import { Calendar, FileText, Edit3, Download, Trash2 } from "lucide-react";
-import React, {useCallback} from "react";
+import React from "react";
 
 function formatDate(date) {
 	if (!date) return "";
@@ -26,60 +26,9 @@ function formatDate(date) {
 	return String(date);
 }
 
-function EventCard({ eventData }) {
-
-    const getContractStatusDisplay = useCallback((contract) => {
-        if (!contract.signatureWorkflow?.isElectronic) {
-            return { text: "Active", class: "active" };
-        }
-
-        const status = contract.signatureWorkflow.workflowStatus;
-
-        switch (status) {
-            case "draft":
-                return { text: "Draft", class: "draft" };
-            case "sent":
-                return { text: "Pending Signature", class: "pending" };
-            case "partially_signed":
-                return { text: "Partially Signed", class: "partial" };
-            case "completed":
-                return { text: "Signed", class: "completed" };
-            default:
-                return { text: "Active", class: "active" };
-        }
-    }, []);
-
-    // Helper function to check if contract is actually signed by client
-    const isContractSignedByClient = useCallback((contract) => {
-        // If no signature fields, it's not an e-signature contract
-        if (
-            !contract.signatureFields ||
-            contract.signatureFields.length === 0
-        ) {
-            return false;
-        }
-
-        // Check if all client signature fields are signed
-        const clientFields = contract.signatureFields.filter(
-            (field) => field.signerRole === "client"
-        );
-
-        // If no client fields, nothing to sign
-        if (clientFields.length === 0) {
-            return false;
-        }
-
-        // Check if all client fields are marked as signed
-        const allClientFieldsSigned = clientFields.every(
-            (field) => field.signed === true
-        );
-
-        // Also check workflow status
-        const workflowCompleted =
-            contract.signatureWorkflow?.workflowStatus === "completed";
-
-        return allClientFieldsSigned && workflowCompleted;
-    }, []);
+function EventCard({ eventData, setSelectedContract, setShowSignModal,
+	 setSignatureData, handleDownloadContract, deleteContract, getContractStatusDisplay,
+	  isContractSignedByClient, loadDraftSignatures }) {
 
 	return (
 		<section className="event-card-planner-contract">

@@ -1,8 +1,8 @@
 // VendorModal.jsx
 import { useState } from "react";
 import { X, MapPin, Phone, Mail, Star, Clock, Users, Ruler } from "lucide-react";
-import InformationToolTip from "./InformationToolTip";
-import VendorHighlightDisplay from "./VendorHighlightDisplay";
+import InformationToolTip from "../InformationToolTip";
+import VendorHighlightDisplay from "../VendorHighlightDisplay";
 import "./VendorDetails.css";
 
 function VendorModal({ vendor, onClose, addService, onContactVendor }) {

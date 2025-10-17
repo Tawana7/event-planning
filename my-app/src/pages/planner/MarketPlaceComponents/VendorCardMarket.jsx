@@ -1,6 +1,6 @@
 import { MapPin} from "lucide-react";
 import "./VendorCardMarket.css";
-import placeholder from "../../assets/elementor-placeholder-image.png";
+import placeholder from "../../../assets/elementor-placeholder-image.png";
 
 function VendorCard({ vendor, onViewMore }) {
   // Calculate price range from services

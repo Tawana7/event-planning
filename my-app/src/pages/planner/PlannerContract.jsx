@@ -6,7 +6,7 @@ import Popup from "../general/popup/Popup.jsx";
 import PlannerSignatureView from "./PlannerSignatureView";
 import { createSignatureDetailsDocument, getUserIPAddress} from "./PlannerSigAttch.js";
 import BASE_URL from "../../apiConfig";
-import EventCard from "./EventCardContract.jsx";
+import EventCard from "./ContractComponents/EventCardContract.jsx";
 
 const useDebounce = (value, delay) => {
 	const [debouncedValue, setDebouncedValue] = useState(value);
@@ -463,18 +463,6 @@ const PlannerContract = () => {
 		[]
 	);
 
-	const loadDraftSignatures = useCallback((contract) => {
-		if (contract.signatureFields) {
-			const draftData = {};
-			contract.signatureFields.forEach((field) => {
-				if (field.draftSignature && !field.signed) {
-					draftData[field.id] = field.draftSignature;
-				}
-			});
-			setSignatureData(draftData);
-		}
-	}, []);
-
 	const isContractSignedByClient = useCallback((contract) => {
 		if (
 			!contract.signatureFields ||
@@ -499,6 +487,39 @@ const PlannerContract = () => {
 			contract.signatureWorkflow?.workflowStatus === "completed";
 
 		return allClientFieldsSigned && workflowCompleted;
+	}, []);
+
+	const getContractStatusDisplay = useCallback((contract) => {
+			if (!contract.signatureWorkflow?.isElectronic) {
+				return { text: "Active", class: "active" };
+			}
+	
+			const status = contract.signatureWorkflow.workflowStatus;
+	
+			switch (status) {
+				case "draft":
+					return { text: "Draft", class: "draft" };
+				case "sent":
+					return { text: "Pending Signature", class: "pending" };
+				case "partially_signed":
+					return { text: "Partially Signed", class: "partial" };
+				case "completed":
+					return { text: "Signed", class: "completed" };
+				default:
+					return { text: "Active", class: "active" };
+			}
+		}, []);
+	
+	const loadDraftSignatures = useCallback((contract) => {
+		if (contract.signatureFields) {
+			const draftData = {};
+			contract.signatureFields.forEach((field) => {
+				if (field.draftSignature && !field.signed) {
+					draftData[field.id] = field.draftSignature;
+				}
+			});
+			setSignatureData(draftData);
+		}
 	}, []);
 
 	const groupedContracts = useMemo(() => {
@@ -616,6 +637,14 @@ const PlannerContract = () => {
 							key={eventId}
 							eventId={eventId}
 							eventData={groupedContracts[eventId]}
+							setSelectedContract={setSelectedContract}
+							setShowSignModal={setShowSignModal}
+							setSignatureData={setSignatureData}
+							handleDownloadContract={handleDownloadContract}
+							deleteContract={deleteContract}
+							getContractStatusDisplay={getContractStatusDisplay}
+							isContractSignedByClient={isContractSignedByClient}
+							loadDraftSignatures={loadDraftSignatures}
 						/>
 					))}
 				</section>

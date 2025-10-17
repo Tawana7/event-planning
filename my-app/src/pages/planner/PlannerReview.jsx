@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { Star, Calendar, MapPin } from "lucide-react";
 import "./PlannerReview.css";
-import PlannerReviewVendor from "./PlannerReviewVendor.jsx";
+import PlannerReviewVendor from "./ReviewComponents/PlannerReviewVendor.jsx";
 import BASE_URL from "../../apiConfig";
 
 export default function PlannerReviewsPage() {

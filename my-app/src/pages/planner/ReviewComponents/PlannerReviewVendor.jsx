@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { getAuth } from "firebase/auth";
 import "./PlannerReviewVendor.css";
-import BASE_URL from "../../apiConfig";
+import BASE_URL from "../../../apiConfig";
 import { Star } from "lucide-react";
 
 export default function PlannerReviewVendor({
